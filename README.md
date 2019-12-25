@@ -1,6 +1,8 @@
 ![](http://chrisgalz.com/keyfix.png)
 # KeyFix
 
+This should work with all versions of macOS.
+
 If you have a 2016-2017 MacBook Pro TouchBar with broken keys that repeat, this code lets you prevent the annoying key repeat.
 This is only for keys that repeat. This will not work with keys that are stuck or do not work at all.
 
