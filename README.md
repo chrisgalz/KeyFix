@@ -1,7 +1,10 @@
 ![](http://chrisgalz.com/keyfix.png)
 # KeyFix
 
-If you have a 2016-2017 MacBook Pro TouchBar with broken keys that repeat, this code lets you prevent the annoying key repeat.
+This should work with all versions of macOS.
+
+This is tested for/with 2016-2017 MacBook Pro TouchBar (hardware recall), but can work to fix any macOS computer with a keyboard-hardware, key-repeat error. This is defined e.g. when typing hello, and it comes out helllo or hellllo. 
+
 This is only for keys that repeat. This will not work with keys that are stuck or do not work at all.
 
 Desktop App: Add to login items, and modify the settings with the GUI
@@ -22,4 +25,4 @@ Icon Credits:
 -Keyboard by Bonturi Luca from the Noun Project
 -Hammer by Rflor from the Noun Project
 
-This is similar to a keylogger, but the input is only checked to run a backspace on key repeats caused on the hardware level of the Mac.
+This is similar to a keylogger, but the input is only checked to run a backspace on key repeats caused on the hardware level of the Mac. The source code is very short and easily readable for security purposes.
