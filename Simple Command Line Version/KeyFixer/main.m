@@ -14,7 +14,7 @@
 #import <ApplicationServices/ApplicationServices.h>
 #include <stdio.h>
 
-const double minimumKeyRepeatRate = 0.3;
+const double minimumKeyRepeatRate = 0.5;
 NSString *glitchedKey = @"b";
 
 static BOOL hasPressed;
@@ -28,15 +28,12 @@ CGEventRef loggerCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef ev
         NSString *keyString = [NSString stringWithFormat: @"%C", str[0]];
         if ([keyString isEqualToString:glitchedKey]) {
             if (hasPressed) {
-                //Send backspace event
-                NSLog(@"should backspace");
-                NSAppleScript* appleScript = [[NSAppleScript alloc] initWithSource:
-                    @"tell application \"System Events\""
-                    "key code 51"
-                    "end tell"];
-                [appleScript executeAndReturnError:nil];
+                hasPressed = YES;
+                CGEventRef a = CGEventCreateKeyboardEvent(NULL, 51, true);
+                CGEventRef b = CGEventCreateKeyboardEvent(NULL, 51, false);
+                CGEventPost(kCGHIDEventTap, a);
+                CGEventPost(kCGHIDEventTap, b);
             }
-            hasPressed = YES;
             [NSTimer scheduledTimerWithTimeInterval:minimumKeyRepeatRate repeats:NO block:^(NSTimer * _Nonnull timer) {
                 hasPressed = NO;
             }];
