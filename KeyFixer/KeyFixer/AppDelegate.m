@@ -20,32 +20,38 @@
 
 @implementation AppDelegate {
     double minKeyRepeatRate;
-    NSString *glitchedKey2;
+    NSArray *glitchedKeys;
 }
 
-static NSString *glitchedKey;
-static BOOL hasPressed;
+static NSArray *glitchedKeys2;
+static NSMutableDictionary *hasPressedDict;
 static double minimumKeyRepeatRate;
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
     // Insert code here to initialize your application
     
     minKeyRepeatRate = [[[NSUserDefaults standardUserDefaults] objectForKey:@"minimumKeyRepeatRate"] doubleValue];
-    glitchedKey2 = [[NSUserDefaults standardUserDefaults] objectForKey:@"glitchedKey"];
-    glitchedKey = glitchedKey2;
+    glitchedKeys2 = [[NSUserDefaults standardUserDefaults] objectForKey:@"glitchedKeys"];
     minimumKeyRepeatRate = minKeyRepeatRate;
     
-    _keyField.stringValue = glitchedKey2;
-    _durationField.stringValue = [NSString stringWithFormat:@"%.02f", minimumKeyRepeatRate];
-    
+    [self process];
     [self beginLoop];
-    
 }
 
 - (IBAction)saveSettings:(id)sender {
     [[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithDouble:_durationField.doubleValue] forKey:@"minimumKeyRepeatRate"];
-    [[NSUserDefaults standardUserDefaults] setObject:_keyField.stringValue forKey:@"glitchedKey"];
+    [[NSUserDefaults standardUserDefaults] setObject:[_keyField.stringValue componentsSeparatedByString:@","] forKey:@"glitchedKeys"];
     [[NSUserDefaults standardUserDefaults] synchronize];
+    [self process];
+}
+
+- (void)process {
+    hasPressedDict = [NSMutableDictionary new];
+    for (NSString *key in glitchedKeys2) {
+        [hasPressedDict setObject:@NO forKey:key];
+    }
+    _keyField.stringValue = [glitchedKeys2 componentsJoinedByString:@","];
+    _durationField.stringValue = [NSString stringWithFormat:@"%.02f", minimumKeyRepeatRate];
 }
 
 - (void)applicationWillTerminate:(NSNotification *)aNotification {
@@ -59,20 +65,34 @@ CGEventRef loggerCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef ev
         UniCharCount strLength;
         CGEventKeyboardGetUnicodeString(event, 10, &strLength, str);
         NSString *keyString = [NSString stringWithFormat: @"%C", str[0]];
-        if ([keyString isEqualToString:glitchedKey]) {
-            if (hasPressed) {
+        if ([glitchedKeys2 containsObject:keyString]) {
+            if ([AppDelegate hasPressedForKey:keyString]) {
                 CGEventRef a = CGEventCreateKeyboardEvent(NULL, 51, true);
                 CGEventRef b = CGEventCreateKeyboardEvent(NULL, 51, false);
                 CGEventPost(kCGHIDEventTap, a);
                 CGEventPost(kCGHIDEventTap, b);
             }
-            hasPressed = YES;
-            [NSTimer scheduledTimerWithTimeInterval:minimumKeyRepeatRate repeats:NO block:^(NSTimer * _Nonnull timer) {
-                hasPressed = NO;
-            }];
+            [AppDelegate setHasPressedForKey:keyString];
         }
     }
     return event;
+}
+
++ (BOOL)hasPressedForKey:(NSString*)key {
+    return [[hasPressedDict objectForKey:key] boolValue];
+}
+
++ (void)setHasPressedForKey:(NSString*)key {
+    [hasPressedDict setObject:@YES forKey:key];
+    if (@available(macOS 10.12, *)) {
+        [NSTimer scheduledTimerWithTimeInterval:minimumKeyRepeatRate repeats:NO block:^(NSTimer * _Nonnull timer) {
+            [self setHasNotPressedForKey:key];
+        }];
+    }
+}
+
++ (void)setHasNotPressedForKey:(NSString*)key {
+    [hasPressedDict setObject:@NO forKey:key];
 }
 
 - (void)beginLoop {
